@@ -1,0 +1,201 @@
+
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@import url("https://fonts.googleapis.com/css?family=Roboto:400,500");
+
+#reLayoutBtn {
+  margin-right: 10px;
+}
+
+ /*! button theme */
+.e-btn,
+.e-css.e-btn {
+  -webkit-tap-highlight-color: transparent;
+  border-color: transparent;
+  color: rgba(0, 0, 0, 0.87);
+  transition: box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.uploadDefault{
+  display: none;
+}
+
+.sb-content-overlay {
+  z-index: 10000022;
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  overflow: hidden;
+  pointer-events: none;
+  left: 0px;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+.db-menu-container,
+.db-diagram-name-container {
+  height: 32px;
+  width: 100%;
+}
+.db-menu-style {
+  float: left;
+  margin-right: 0px;
+}
+
+.db-menu-style .e-dropdown-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 400;
+  background-color: transparent;
+  color:#ffffff;
+  height: 28px;
+}
+
+.db-menu-style .e-dropdown-btn.e-btn-hover,
+.db-menu-style .e-dropdown-btn:hover {
+  background-color: #ffffff;
+  color: #046AE5;
+  box-shadow: 0 0 0 0;
+}
+.row {
+  margin-left: 0px;
+  margin-right: 0px;
+}
+
+.row-header {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.row-header1 {
+  font-size: 12px;
+  padding-left: 2px;
+  font-weight: 400;
+}
+
+.db-diagram-name-container {
+  padding: 6px 20px;
+}
+
+.db-diagram-name-container #diagramName {
+  display: block;
+  margin-top: 2px;
+}
+
+.db-diagram-name-container #diagramEditable {
+  display: none;
+  background: transparent;
+  border: none;
+  font-weight: 400;
+  height: 19px;
+  min-width: 250px;
+}
+
+.db-diagram-name-container.db-edit-name #diagramName {
+  display: none;
+}
+
+.db-diagram-name-container.db-edit-name #diagramEditable {
+  display: block;
+}
+
+.db-header-container {
+  background-color: #046AE5;
+  width: 100%;
+}
+.db-menu-style .e-dropdown-btn.e-btn-hover,
+.db-menu-style .e-dropdown-btn:hover {
+  background-color: #ffffff;
+  color: #046AE5;
+  box-shadow: 0 0 0 0;
+}
+.sb-content-overlay {
+  z-index: 10000022;
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  overflow: hidden;
+  pointer-events: none;
+  left: 0px;
+}
+.circular {
+  animation: rotate 2s linear infinite;
+  height: 50px;
+  width: 50px;
+  border-radius: 50%;
+}
+.e-toolbar .e-toolbar-items .e-toolbar-item.tb-item-selected .e-tbar-btn.e-btn,
+.e-toolbar .e-toolbar-items .e-toolbar-item .e-dropdown-btn.tb-item-selected {
+    background: #0078d4;
+}
+.e-toolbar .e-toolbar-items .e-toolbar-item.tb-item-selected .e-tbar-btn .e-icons.e-btn-icon,
+.e-toolbar .e-toolbar-items .e-toolbar-item .e-dropdown-btn.tb-item-selected .e-btn-icon {
+    color: #ffffff;
+}
+.showDropdown {
+  display: none;
+}
+#inline-palette{
+  content: "\e71c";
+}
+
+.properties{
+  margin-left: 15px;
+  margin-top: 10px
+}
+.propertyPanel{
+  overflow: auto;
+  border-left: 1px solid #CBCBCB;
+  border-top: 1px solid #CBCBCB;
+}
+
