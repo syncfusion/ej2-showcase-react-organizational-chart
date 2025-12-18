@@ -1,9 +1,9 @@
 import './App.css';
 import * as React from "react";
-import { DiagramComponent, OverviewComponent, SelectorConstraints, PrintAndExport, NodeConstraints, SnapConstraints, ConnectorConstraints, StackPanel, TextElement, PathElement, ImageElement, HierarchicalTree, DataBinding, Inject, Diagram } from "@syncfusion/ej2-react-diagrams";
+import { DiagramComponent, OverviewComponent, SelectorConstraints, PrintAndExport, NodeConstraints, SnapConstraints, ConnectorConstraints, StackPanel, TextElement, PathElement, ImageElement, HierarchicalTree, DataBinding, Inject, Diagram, Snapping, Keys, KeyModifiers } from "@syncfusion/ej2-react-diagrams";
 import { DataManager } from "@syncfusion/ej2-data";
-import { DiagramClientSideEvents } from "./events";
-import { UtilityMethods } from "./utilityMethods";
+import { DiagramClientSideEvents } from "./script/events";
+import { UtilityMethods } from "./script/utilityMethods";
 import { DropDownButtonComponent } from "@syncfusion/ej2-react-splitbuttons";
 import { DialogComponent } from "@syncfusion/ej2-react-popups";
 import { DropDownListComponent, MultiSelectComponent, CheckBoxSelection } from '@syncfusion/ej2-react-dropdowns';
@@ -18,6 +18,9 @@ import { ToolbarComponent, ItemsDirective, ItemDirective, ContextMenuComponent, 
 export let diagramName;
 export let toolbarEditor;
 export let diagramInstance;
+export let overviewInstance;
+export let sliderInstance;
+export let defaultuploadInstance;
 export let menuClick;
 export let uploadChange;
 export let fontSize;
@@ -31,181 +34,184 @@ Diagram.Inject(PrintAndExport);
 let data = [
   {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": "parent", "Name": "Maria Anders", "Designation": "Managing Director",
-    "IsExpand": "true", "RatingColor": "#C34444", "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image30.png', "EmployeeID": 'SYNC1001', "Team": "TypeScript", "EmailId": 'maria.anders@gmail.com', "PhoneNumber": '0324 - 1819301'
+    "IsExpand": "true", "RatingColor": "#C34444", "ImageUrl": './assets/images/maria.png', "EmployeeID": 'SYNC1001', "Team": "TypeScript", "EmailId": 'maria.anders@gmail.com', "PhoneNumber": '0324 - 1819301'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 1, "Name": "Ana Trujillo", "Designation": "Project Manager",
     "IsExpand": "false",
-    "RatingColor": "#68C2DE", "ReportingPerson": "parent", "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image2.png', "EmployeeID": 'SYNC1002', "Team": "Java", "EmailId": 'ana.truj@gmail.com', "PhoneNumber": '0324 - 1819302'
+    "RatingColor": "#68C2DE", "ReportingPerson": "parent", "ImageUrl": './assets/images/carlos.png', "EmployeeID": 'SYNC1002', "Team": "Java", "EmailId": 'ana.truj@gmail.com', "PhoneNumber": '0324 - 1819302'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 2, "Name": "Anto Moreno", "Designation": "Project Lead",
     "IsExpand": "false",
-    "RatingColor": "#93B85A", "ReportingPerson": 1, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image1.png', "EmployeeID": 'SYNC1003', "Team": "Windows", "EmailId": 'ana.moreno@gmail.com', "PhoneNumber": '0324 - 1819303'
+    "RatingColor": "#93B85A", "ReportingPerson": 1, "ImageUrl": './assets/images/daniel.png', "EmployeeID": 'SYNC1003', "Team": "Windows", "EmailId": 'ana.moreno@gmail.com', "PhoneNumber": '0324 - 1819303'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 3, "Name": "Thomas Hardy", "Designation": "Senior S/w Engg",
     "IsExpand": "false",
-    "RatingColor": "#68C2DE", "ReportingPerson": 2, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image3.png', "EmployeeID": 'SYNC1004', "Team": "UX", "EmailId": 'thomos.hardy@gmail.com', "PhoneNumber": '0324 - 1819304'
+    "RatingColor": "#68C2DE", "ReportingPerson": 2, "ImageUrl": './assets/images/jaime.png', "EmployeeID": 'SYNC1004', "Team": "UX", "EmailId": 'thomos.hardy@gmail.com', "PhoneNumber": '0324 - 1819304'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 4, "Name": "Christina kaff", "Designation": "S/w Engg",
     "IsExpand": "false",
-    "RatingColor": "#93B85A", "ReportingPerson": 3, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image4.png', "EmployeeID": 'SYNC1005', "Team": "UX", "EmailId": 'chris.kaff@gmail.com', "PhoneNumber": '0324 - 1819305'
+    "RatingColor": "#93B85A", "ReportingPerson": 3, "ImageUrl": './assets/images/felipe.png', "EmployeeID": 'SYNC1005', "Team": "UX", "EmailId": 'chris.kaff@gmail.com', "PhoneNumber": '0324 - 1819305'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 5, "Name": "Hanna Moos", "Designation": "Project Trainee",
     "IsExpand": "true",
-    "RatingColor": "#D46E89", "ReportingPerson": 4, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image6.png', "EmployeeID": 'SYNC1006', "Team": "Windows", "EmailId": 'hanna.moos@gmail.com', "PhoneNumber": '0324 - 1819306'
+    "RatingColor": "#D46E89", "ReportingPerson": 4, "ImageUrl": './assets/images/helen.png', "EmployeeID": 'SYNC1006', "Team": "Windows", "EmailId": 'hanna.moos@gmail.com', "PhoneNumber": '0324 - 1819306'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 6, "Name": "Peter Citeaux", "Designation": "S/w Engg",
     "IsExpand": "true",
-    "RatingColor": "#68C2DE", "ReportingPerson": 5, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image5.png', "EmployeeID": 'SYNC1007', "Team": "Java", "EmailId": 'peter.cite@gmail.com', "PhoneNumber": '0324 - 1819307'
+    "RatingColor": "#68C2DE", "ReportingPerson": 5, "ImageUrl": './assets/images/rene.png', "EmployeeID": 'SYNC1007', "Team": "Java", "EmailId": 'peter.cite@gmail.com', "PhoneNumber": '0324 - 1819307'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 7, "Name": "Martín Kloss", "Designation": "Project Trainee",
     "IsExpand": "false",
-    "RatingColor": "#93B85A", "ReportingPerson": 6, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image18.png', "EmployeeID": 'SYNC1008', "Team": "UX", "EmailId": 'martin.kloss@gmail.com', "PhoneNumber": '0324 - 1819308'
+    "RatingColor": "#93B85A", "ReportingPerson": 6, "ImageUrl": './assets/images/yoshi.png', "EmployeeID": 'SYNC1008', "Team": "UX", "EmailId": 'martin.kloss@gmail.com', "PhoneNumber": '0324 - 1819308'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 8, "Name": "Elizabeth Mary", "Designation": "Project Trainee",
     "IsExpand": "None",
-    "RatingColor": "#93B85A", "ReportingPerson": 6, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image7.png', "EmployeeID": 'SYNC1009', "Team": "Java", "EmailId": 'elizabeth.marys@gmail.com', "PhoneNumber": '0324 - 1819309'
+    "RatingColor": "#93B85A", "ReportingPerson": 6, "ImageUrl": './assets/images/yvonne.png', "EmployeeID": 'SYNC1009', "Team": "Java", "EmailId": 'elizabeth.marys@gmail.com', "PhoneNumber": '0324 - 1819309'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 9, "Name": "Victoria Ash", "Designation": "Senior S/w Engg",
     "IsExpand": "None",
-    "RatingColor": "#D46E89", "ReportingPerson": 5, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image8.png', "EmployeeID": 'SYNC1010', "Team": "React", "EmailId": 'victoria.ash@gmail.com', "PhoneNumber": '0324 - 1819310'
+    "RatingColor": "#D46E89", "ReportingPerson": 5, "ImageUrl": './assets/images/carlos.png', "EmployeeID": 'SYNC1010', "Team": "React", "EmailId": 'victoria.ash@gmail.com', "PhoneNumber": '0324 - 1819310'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 10, "Name": "Francisco Yang", "Designation": "Senior S/w Engg",
     "IsExpand": "None",
-    "RatingColor": "#93B85A", "ReportingPerson": 3, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image19.png', "EmployeeID": 'SYNC1011', "Team": "Java", "EmailId": 'francisco.yang@gmail.com', "PhoneNumber": '0324 - 1819311'
+    "RatingColor": "#93B85A", "ReportingPerson": 3, "ImageUrl": './assets/images/maria.png', "EmployeeID": 'SYNC1011', "Team": "Java", "EmailId": 'francisco.yang@gmail.com', "PhoneNumber": '0324 - 1819311'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 17, "Name": "Ann Devon", "Designation": "Project Manager",
     "IsExpand": "false",
-    "RatingColor": "#68C2DE", "ReportingPerson": 25, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image21.png', "EmployeeID": 'SYNC1012', "Team": "UX", "EmailId": 'Ann.devon@gmail.com', "PhoneNumber": '0324 - 1819312'
+    "RatingColor": "#68C2DE", "ReportingPerson": 25, "ImageUrl": './assets/images/yoshi-kenna.png', "EmployeeID": 'SYNC1012', "Team": "UX", "EmailId": 'Ann.devon@gmail.com', "PhoneNumber": '0324 - 1819312'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 18, "Name": "Roland Mendel", "Designation": "Project Lead",
     "IsExpand": "true",
-    "RatingColor": "#68C2DE", "ReportingPerson": 17, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image9.png', "EmployeeID": 'SYNC1013', "Team": "UX", "EmailId": 'roland.mendel@gmail.com', "PhoneNumber": '0324 - 1819313'
+    "RatingColor": "#68C2DE", "ReportingPerson": 17, "ImageUrl": './assets/images/carlos.png', "EmployeeID": 'SYNC1013', "Team": "UX", "EmailId": 'roland.mendel@gmail.com', "PhoneNumber": '0324 - 1819313'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 19, "Name": "Aria Cruz", "Designation": "Senior S/w Engg",
     "IsExpand": "false",
-    "RatingColor": "#93B85A", "ReportingPerson": 18, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image23.png', "EmployeeID": 'SYNC1014', "Team": "Angular", "EmailId": 'aria.cruz@gmail.com', "PhoneNumber": '0324 - 1819314'
+    "RatingColor": "#93B85A", "ReportingPerson": 18, "ImageUrl": './assets/images/daniel.png', "EmployeeID": 'SYNC1014', "Team": "Angular", "EmailId": 'aria.cruz@gmail.com', "PhoneNumber": '0324 - 1819314'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 20, "Name": "Martine Rancé", "Designation": "S/w Engg",
     "IsExpand": "None",
-    "RatingColor": "#93B85A", "ReportingPerson": 18, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image10.png', "EmployeeID": 'SYNC1015', "Team": "UX", "EmailId": 'martina.rance@gmail.com', "PhoneNumber": '0324 - 1819315'
+    "RatingColor": "#93B85A", "ReportingPerson": 18, "ImageUrl": './assets/images/helen.png', "EmployeeID": 'SYNC1015', "Team": "UX", "EmailId": 'martina.rance@gmail.com', "PhoneNumber": '0324 - 1819315'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 21, "Name": "Maria Larsson", "Designation": "Project Trainee",
     "IsExpand": "false",
-    "RatingColor": "#EBB92E", "ReportingPerson": 19, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image11.png', "EmployeeID": 'SYNC1016', "Team": "UX", "EmailId": 'maria.larsson@gmail.com', "PhoneNumber": '0324 - 1819316'
+    "RatingColor": "#EBB92E", "ReportingPerson": 19, "ImageUrl": './assets/images/maria.png', "EmployeeID": 'SYNC1016', "Team": "UX", "EmailId": 'maria.larsson@gmail.com', "PhoneNumber": '0324 - 1819316'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 22, "Name": "Diego Roel", "Designation": "Project Trainee",
     "IsExpand": "false",
-    "RatingColor": "#D46E89", "ReportingPerson": 21, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image12.png', "EmployeeID": 'SYNC1017', "Team": "TypeScript", "EmailId": 'diego.roel@gmail.com', "PhoneNumber": '0324 - 1819317'
+    "RatingColor": "#D46E89", "ReportingPerson": 21, "ImageUrl": './assets/images/jaime.png', "EmployeeID": 'SYNC1017', "Team": "TypeScript", "EmailId": 'diego.roel@gmail.com', "PhoneNumber": '0324 - 1819317'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 23, "Name": "Peter Franken", "Designation": "Project Trainee",
     "IsExpand": "None",
-    "RatingColor": "#D46E89", "ReportingPerson": 21, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image13.png', "EmployeeID": 'SYNC1018', "Team": "JavaScript", "EmailId": 'peter.franken@gmail.com', "PhoneNumber": '0324 - 1819318'
+    "RatingColor": "#D46E89", "ReportingPerson": 21, "ImageUrl": './assets/images/felipe.png', "EmployeeID": 'SYNC1018', "Team": "JavaScript", "EmailId": 'peter.franken@gmail.com', "PhoneNumber": '0324 - 1819318'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 25, "Name": "Carine Schmitt", "Designation": "Project Manager",
     "IsExpand": "None",
-    "RatingColor": "#EBB92E", "ReportingPerson": "parent", "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image24.png', "EmployeeID": 'SYNC1019', "Team": "Java", "EmailId": 'carine.schmit@gmail.com', "PhoneNumber": '0324 - 1819319'
+    "RatingColor": "#EBB92E", "ReportingPerson": "parent", "ImageUrl": './assets/images/maria.png', "EmployeeID": 'SYNC1019', "Team": "Java", "EmailId": 'carine.schmit@gmail.com', "PhoneNumber": '0324 - 1819319'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 26, "Name": "Paolo Accorti", "Designation": "Project Lead",
     "IsExpand": "None",
-    "RatingColor": "#D46E89", "ReportingPerson": 36, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image14.png', "EmployeeID": 'SYNC1020', "Team": "React", "EmailId": 'paolo.acc@gmail.com', "PhoneNumber": '0324 - 1819320'
+    "RatingColor": "#D46E89", "ReportingPerson": 36, "ImageUrl": './assets/images/yvonne.png', "EmployeeID": 'SYNC1020', "Team": "React", "EmailId": 'paolo.acc@gmail.com', "PhoneNumber": '0324 - 1819320'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 27, "Name": "Eduardo Roel", "Designation": "Senior S/w Engg",
     "IsExpand": "true",
-    "RatingColor": "#93B85A", "ReportingPerson": 26, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image26.png', "EmployeeID": 'SYNC1021', "Team": "JavaScript", "EmailId": 'eduardo.roel@gmail.com', "PhoneNumber": '0324 - 1819321'
+    "RatingColor": "#93B85A", "ReportingPerson": 26, "ImageUrl": './assets/images/sergio.png', "EmployeeID": 'SYNC1021', "Team": "JavaScript", "EmailId": 'eduardo.roel@gmail.com', "PhoneNumber": '0324 - 1819321'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 28, "Name": "José Pedro", "Designation": "Senior S/w Engg",
     "IsExpand": "true",
-    "RatingColor": "#D46E89", "ReportingPerson": 27, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image15.png', "EmployeeID": 'SYNC1022', "Team": "Java", "EmailId": 'josé.pedro@gmail.com', "PhoneNumber": '0324 - 1819322'
+    "RatingColor": "#D46E89", "ReportingPerson": 27, "ImageUrl": './assets/images/yoshi-kenna.png', "EmployeeID": 'SYNC1022', "Team": "Java", "EmailId": 'josé.pedro@gmail.com', "PhoneNumber": '0324 - 1819322'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 29, "Name": "André Fonseca", "Designation": "Senior S/w Engg",
     "IsExpand": "true",
-    "RatingColor": "#EBB92E", "ReportingPerson": 28, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image17.png', "EmployeeID": 'SYNC1023', "Team": "React", "EmailId": 'andré.fonseca@gmail.com', "PhoneNumber": '0324 - 1819323'
+    "RatingColor": "#EBB92E", "ReportingPerson": 28, "ImageUrl": './assets/images/joseph.png', "EmployeeID": 'SYNC1023', "Team": "React", "EmailId": 'andré.fonseca@gmail.com', "PhoneNumber": '0324 - 1819323'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 30, "Name": "Howard Snyd", "Designation": "S/w Engg",
     "IsExpand": "false",
-    "RatingColor": "#68C2DE", "ReportingPerson": 29, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image27.png', "EmployeeID": 'SYNC1024', "Team": "JavaScript", "EmailId": 'howard.synd@gmail.com', "PhoneNumber": '0324 - 1819324'
+    "RatingColor": "#68C2DE", "ReportingPerson": 29, "ImageUrl": './assets/images/simon.png', "EmployeeID": 'SYNC1024', "Team": "JavaScript", "EmailId": 'howard.synd@gmail.com', "PhoneNumber": '0324 - 1819324'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 31, "Name": "Manu Pereira", "Designation": "Project Trainee",
     "IsExpand": "None",
-    "RatingColor": "#D46E89", "ReportingPerson": 29, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image20.png', "EmployeeID": 'SYNC1025', "Team": "JavaScript", "EmailId": 'manu.periera@gmail.com', "PhoneNumber": '0324 - 1819325'
+    "RatingColor": "#D46E89", "ReportingPerson": 29, "ImageUrl": './assets/images/maria.png', "EmployeeID": 'SYNC1025', "Team": "JavaScript", "EmailId": 'manu.periera@gmail.com', "PhoneNumber": '0324 - 1819325'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 32, "Name": "Mario Pontes", "Designation": "S/w Engg",
     "IsExpand": "None",
-    "RatingColor": "#D46E89", "ReportingPerson": 29, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image22.png', "EmployeeID": 'SYNC1026', "Team": "Java", "EmailId": 'mario.pontes@gmail.com', "PhoneNumber": '0324 - 1819326'
+    "RatingColor": "#D46E89", "ReportingPerson": 29, "ImageUrl": './assets/images/annette.png', "EmployeeID": 'SYNC1026', "Team": "Java", "EmailId": 'mario.pontes@gmail.com', "PhoneNumber": '0324 - 1819326'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 33, "Name": "Carlos Schmitt", "Designation": "Project Trainee",
     "IsExpand": "None",
-    "RatingColor": "#D46E89", "ReportingPerson": 29, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image28.png', "EmployeeID": 'SYNC1027', "Team": "React", "EmailId": 'carlos.schmitt@gmail.com', "PhoneNumber": '0324 - 1819327'
+    "RatingColor": "#D46E89", "ReportingPerson": 29, "ImageUrl": './assets/images/maria.png', "EmployeeID": 'SYNC1027', "Team": "React", "EmailId": 'carlos.schmitt@gmail.com', "PhoneNumber": '0324 - 1819327'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 34, "Name": "Yoshi Latimer", "Designation": "Project Trainee",
     "IsExpand": "true",
-    "RatingColor": "#D46E89", "ReportingPerson": 29, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image31.png', "EmployeeID": 'SYNC1028', "Team": "React", "EmailId": 'yoshi.latimer@gmail.com', "PhoneNumber": '0324 - 1819328'
+    "RatingColor": "#D46E89", "ReportingPerson": 29, "ImageUrl": './assets/images/daniel.png', "EmployeeID": 'SYNC1028', "Team": "React", "EmailId": 'yoshi.latimer@gmail.com', "PhoneNumber": '0324 - 1819328'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 35, "Name": "Patricia Kenna", "Designation": "Project Trainee",
     "IsExpand": "true",
-    "RatingColor": "#EBB92E", "ReportingPerson": 29, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image25.png', "EmployeeID": 'SYNC1029', "Team": "JavaScript", "EmailId": 'patricia.kenna@gmail.com', "PhoneNumber": '0324 - 1819329'
+    "RatingColor": "#EBB92E", "ReportingPerson": 29, "ImageUrl": './assets/images/helen.png', "EmployeeID": 'SYNC1029', "Team": "JavaScript", "EmailId": 'patricia.kenna@gmail.com', "PhoneNumber": '0324 - 1819329'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 36, "Name": "Helen Bennett", "Designation": "Project Lead",
     "IsExpand": "None",
-    "RatingColor": "#D46E89", "ReportingPerson": 25, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image32.png', "EmployeeID": 'SYNC1030', "Team": "Java", "EmailId": 'helen.bennette@gmail.com', "PhoneNumber": '0324 - 1819330'
+    "RatingColor": "#D46E89", "ReportingPerson": 25, "ImageUrl": './assets/images/rene.png', "EmployeeID": 'SYNC1030', "Team": "Java", "EmailId": 'helen.bennette@gmail.com', "PhoneNumber": '0324 - 1819330'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 65, "Name": "Alej Camino", "Designation": "Project Manager",
     "IsExpand": "false",
-    "RatingColor": "#93B85A", "ReportingPerson": "parent", "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image33.png', "EmployeeID": 'SYNC1031', "Team": "Windows", "EmailId": 'aleg.camino@gmail.com', "PhoneNumber": '0324 - 1819331'
+    "RatingColor": "#93B85A", "ReportingPerson": "parent", "ImageUrl": './assets/images/carlos.png', "EmployeeID": 'SYNC1031', "Team": "Windows", "EmailId": 'aleg.camino@gmail.com', "PhoneNumber": '0324 - 1819331'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 66, "Name": "Jonas Bergsen", "Designation": "Project Lead",
     "IsExpand": "None",
-    "RatingColor": "#68C2DE", "ReportingPerson": 65, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image34.png', "EmployeeID": 'SYNC1032', "Team": "JavaScript", "EmailId": 'jonas.bergsen@gmail.com', "PhoneNumber": '0324 - 1819332'
+    "RatingColor": "#68C2DE", "ReportingPerson": 65, "ImageUrl": './assets/images/joseph.png', "EmployeeID": 'SYNC1032', "Team": "JavaScript", "EmailId": 'jonas.bergsen@gmail.com', "PhoneNumber": '0324 - 1819332'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 67, "Name": "Jose Pavarotti", "Designation": "Project Trainee",
     "IsExpand": "None",
-    "RatingColor": "#D46E89", "ReportingPerson": 68, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image29.png', "EmployeeID": 'SYNC1033', "Team": "Windows", "EmailId": 'jose.pavarotti@gmail.com', "PhoneNumber": '0324 - 1819333'
+    "RatingColor": "#D46E89", "ReportingPerson": 68, "ImageUrl": './assets/images/maria.png', "EmployeeID": 'SYNC1033', "Team": "Windows", "EmailId": 'jose.pavarotti@gmail.com', "PhoneNumber": '0324 - 1819333'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 68, "Name": "Miguel Angel", "Designation": "Senior S/w Engg",
     "IsExpand": "None",
-    "RatingColor": "#D46E89", "ReportingPerson": 66, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image30.png', "EmployeeID": 'SYNC1034', "Team": "Angular", "EmailId": 'miguel.angel@gmail.com', "PhoneNumber": '0324 - 1819334'
+    "RatingColor": "#D46E89", "ReportingPerson": 66, "ImageUrl": './assets/images/yoshi.png', "EmployeeID": 'SYNC1034', "Team": "Angular", "EmailId": 'miguel.angel@gmail.com', "PhoneNumber": '0324 - 1819334'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 69, "Name": "Jytte Petersen", "Designation": "Senior S/w Engg",
     "IsExpand": "true",
-    "RatingColor": "#68C2DE", "ReportingPerson": 68, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image4.png', "EmployeeID": 'SYNC1035', "Team": "Angular", "EmailId": 'jytte.petersen@gmail.com', "PhoneNumber": '0324 - 1819335'
+    "RatingColor": "#68C2DE", "ReportingPerson": 68, "ImageUrl": './assets/images/felipe.png', "EmployeeID": 'SYNC1035', "Team": "Angular", "EmailId": 'jytte.petersen@gmail.com', "PhoneNumber": '0324 - 1819335'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 70, "Name": "Kloss Perrier", "Designation": "Project Lead",
     "IsExpand": "None",
-    "RatingColor": "#93B85A", "ReportingPerson": 72, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image6.png', "EmployeeID": 'SYNC1036', "Team": "JavaScript", "EmailId": 'closs.perrier@gmail.com', "PhoneNumber": '0324 - 1819336'
+    "RatingColor": "#93B85A", "ReportingPerson": 72, "ImageUrl": './assets/images/jytte.png', "EmployeeID": 'SYNC1036', "Team": "JavaScript", "EmailId": 'closs.perrier@gmail.com', "PhoneNumber": '0324 - 1819336'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 71, "Name": "Art Nancy", "Designation": "Senior S/w Engg",
     "IsExpand": "true",
-    "RatingColor": "#D46E89", "ReportingPerson": 27, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image7.png', "EmployeeID": 'SYNC1037', "Team": "Java", "EmailId": 'art.nancy@gmail.com', "PhoneNumber": '0324 - 1819337'
+    "RatingColor": "#D46E89", "ReportingPerson": 27, "ImageUrl": './assets/images/rene.png', "EmployeeID": 'SYNC1037', "Team": "Java", "EmailId": 'art.nancy@gmail.com', "PhoneNumber": '0324 - 1819337'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 72, "Name": "Pascal Cartrain", "Designation": "Project Lead",
     "IsExpand": "true",
-    "RatingColor": "#EBB92E", "ReportingPerson": 65, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image1.png', "EmployeeID": 'SYNC1038', "Team": "Vue", "EmailId": 'pascal.cartrain@gmail.com', "PhoneNumber": '0324 - 1819338'
+    "RatingColor": "#EBB92E", "ReportingPerson": 65, "ImageUrl": './assets/images/renete.png', "EmployeeID": 'SYNC1038', "Team": "Vue", "EmailId": 'pascal.cartrain@gmail.com', "PhoneNumber": '0324 - 1819338'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 73, "Name": "Liz Nixon", "Designation": "Senior S/w Engg",
     "IsExpand": "false",
-    "RatingColor": "#68C2DE", "ReportingPerson": 68, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image2.png', "EmployeeID": 'SYNC1039', "Team": "JavaScript", "EmailId": 'liz.nixon@gmail.com', "PhoneNumber": '0324 - 1819339'
+    "RatingColor": "#68C2DE", "ReportingPerson": 68, "ImageUrl": './assets/images/maria.png', "EmployeeID": 'SYNC1039', "Team": "JavaScript", "EmailId": 'liz.nixon@gmail.com', "PhoneNumber": '0324 - 1819339'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 89, "Name": "Georg Pipps", "Designation": "Senior S/w Engg",
     "IsExpand": "None",
-    "RatingColor": "#EBB92E", "ReportingPerson": "parent", "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image8.png', "EmployeeID": 'SYNC1040', "Team": "Java", "EmailId": 'georg.pipps@gmail.com', "PhoneNumber": '0324 - 1819340'
+    "RatingColor": "#EBB92E", "ReportingPerson": "parent", "ImageUrl": './assets/images/rene.png', "EmployeeID": 'SYNC1040', "Team": "Java", "EmailId": 'georg.pipps@gmail.com', "PhoneNumber": '0324 - 1819340'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 30, "Name": "Isabel Castro", "Designation": "Project Trainee",
     "IsExpand": "None",
-    "RatingColor": "#D46E89", "ReportingPerson": 89, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image3.png', "EmployeeID": 'SYNC1041', "Team": "Windows", "EmailId": 'isabel.castro@gmail.com', "PhoneNumber": '0324 - 1819341'
+    "RatingColor": "#D46E89", "ReportingPerson": 89, "ImageUrl": './assets/images/jhon.png', "EmployeeID": 'SYNC1041', "Team": "Windows", "EmailId": 'isabel.castro@gmail.com', "PhoneNumber": '0324 - 1819341'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 90, "Name": "Rene Phillips", "Designation": "Project Trainee",
     "IsExpand": "false",
-    "RatingColor": "#68C2DE", "ReportingPerson": 89, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image9.png', "EmployeeID": 'SYNC1042', "Team": "JavaScript", "EmailId": 'rene.phillips@gmail.com', "PhoneNumber": '0324 - 1819342'
+    "RatingColor": "#68C2DE", "ReportingPerson": 89, "ImageUrl": './assets/images/jytte.png', "EmployeeID": 'SYNC1042', "Team": "JavaScript", "EmailId": 'rene.phillips@gmail.com', "PhoneNumber": '0324 - 1819342'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 91, "Name": "Lúcia Carvalho", "Designation": "Project Trainee",
     "IsExpand": "None",
-    "RatingColor": "#93B85A", "ReportingPerson": 89, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image10.png', "EmployeeID": 'SYNC1043', "Team": "Java", "EmailId": 'lúcia.carvalho@gmail.com', "PhoneNumber": '0324 - 1819343'
+    "RatingColor": "#93B85A", "ReportingPerson": 89, "ImageUrl": './assets/images/yoshi-kenna.png', "EmployeeID": 'SYNC1043', "Team": "Java", "EmailId": 'lúcia.carvalho@gmail.com', "PhoneNumber": '0324 - 1819343'
   }, {
     "Fill": "white", "StrokeColor": "black", "FontFamily": "Arial", "IsBold": false, "IsItalic": false, "Decoration": "None", "FontSize": 12, "color": "black", "Id": 92, "Name": "Horst Kloss", "Designation": "Project Trainee",
     "IsExpand": "None",
-    "RatingColor": "#D46E89", "ReportingPerson": 89, "ImageUrl": 'https://ej2.syncfusion.com/react/demos/src/diagram/employees/image5.png', "EmployeeID": 'SYNC1044', "Team": "Angular", "EmailId": 'horst.kloss@gmail.com', "PhoneNumber": '0324 - 1819344'
+    "RatingColor": "#D46E89", "ReportingPerson": 89, "ImageUrl": './assets/images/helen.png', "EmployeeID": 'SYNC1044', "Team": "Angular", "EmailId": 'horst.kloss@gmail.com', "PhoneNumber": '0324 - 1819344'
   },
-];
+
+]
+
+const dataTemp = data;
 let pictureUpload;
 // To get the node userhandle.
 let handle = [
@@ -249,10 +255,6 @@ let fontSizeList = [
   { text: '16', value: '16pt' },
   { text: '18', value: '18pt' },
   { text: '20', value: '20pt' },
-  { text: '22', value: '22pt' },
-  { text: '24', value: '24pt' },
-  { text: '26', value: '26pt' },
-  { text: '28', value: '28pt' },
 ];
 // Returns File menu items.
 let getFileMenuItems = [
@@ -263,8 +265,6 @@ let getFileMenuItems = [
       { text: 'Open', iconCss: 'sf-icon-open' }, { separator: true },
       { text: 'Save', iconCss: 'sf-icon-save' },
       { separator: true },
-      { text: 'Export', iconCss: 'sf-icon-export' },
-      { text: 'Print', iconCss: 'sf-icon-print' }
     ],
   }
 ];
@@ -317,8 +317,13 @@ let diagramRegions = [
 let fontFamily;
 let dglTarget;
 
-export class CommonKeyboardCommands {
-  static download() {
+function truncateText(text, maxLength) {
+  if (text && text.length > maxLength) {
+    return text.substring(0, maxLength) + '...';
+  }
+  return text;
+}
+function download(data) {
     if (window.navigator.msSaveBlob) {
       var blob = new Blob([data], { type: 'data:text/json;charset=utf-8,' });
       window.navigator.msSaveOrOpenBlob(blob, 'Diagram.json');
@@ -332,8 +337,8 @@ export class CommonKeyboardCommands {
       a.click();
       a.remove();
     }
-  }
-}
+};
+
 //Load the diagram
 function loadDiagram(event) {
   var diagram = document.getElementById("diagram").ej2_instances[0];
@@ -374,19 +379,24 @@ function applyBase64AsImageUrl(base64String) {
   diagram.dataSourceSettings.dataSource.dataSource.json.find(x => x.Id == selectedNode.data.Id).ImageUrl = base64String;
   var imageTag = document.getElementById(selectedNode.id + '_picimage');
   imageTag.href.baseVal = base64String;
+   UtilityMethods.prototype.addImageToWrapper(selectedNode,undefined,base64String);
 }
+export const expandIcon = {
+    expandIconShape: 'None',
+    collapseIconShape: 'None'
+};
 // To render the shortcut keys for menu items.
 function getShortCutKey(menuItem) {
   var shortCutKey = navigator.platform.indexOf('Mac') > -1 ? 'Cmd' : 'Ctrl';
   switch (menuItem) {
     case 'New':
-      shortCutKey = 'Shift' + '+N';
+      shortCutKey = 'Shift' + ' + N';
       break;
     case 'Open':
-      shortCutKey = shortCutKey + '+O';
+      shortCutKey = shortCutKey + ' + O';
       break;
     case 'Save':
-      shortCutKey = shortCutKey + '+S';
+      shortCutKey = shortCutKey + ' + S';
       break;
     default:
       shortCutKey = '';
@@ -417,14 +427,15 @@ class App extends React.Component {
     content.style.strokeColor = obj.data.StrokeColor;
     content.style.fill = obj.data.Fill;
     content.padding = { left: 5, right: 10, top: 5, bottom: 5 };
+    content.width = 150;
+    content.height = 80;
 
     // Add the line at the top of the outer stack
     let line = new PathElement();
     line.data = 'M0,0 L1,0'; // Line from (0,0) to (1,0)
     line.width = 2;
-    line.height = 1;
+    line.height = 10;
     line.style.strokeWidth = 2;
-    line.style.margin = { left: 20, right: 20, top: 20, bottom: 20 };
     line.style.strokeColor = (obj.data).RatingColor;
     line.horizontalAlignment = 'Stretch';
     line.verticalAlignment = 'Top';
@@ -471,7 +482,6 @@ class App extends React.Component {
     desigText.horizontalAlignment = 'Left';
     desigText.style.textWrapping = 'Wrap';
     desigText.id = obj.id + '_desig';
-    innerStack.children = [text, desigText];
     // Add the line to the innerStack, and the innerStack to the content stack
     innerStack.children = [line, text, desigText];
     content.children = [image, innerStack];
@@ -521,14 +531,15 @@ class App extends React.Component {
     switch (commandType.toLowerCase()) {
       case 'new':
         diagram.clear();
-        DiagramClientSideEvents.prototype.historyChange();
+        overviewInstance.refresh();
+        diagram.dataSourceSettings.dataSource = new DataManager([dataTemp[0]]);
+        diagram.dataBind();
         break;
       case 'open':
         document.getElementsByClassName('e-file-select-wrap')[0].querySelector('button').click();
         break;
       case 'save':
-        var data = diagram.saveDiagram();
-        CommonKeyboardCommands.download(data);
+        download(diagram.saveDiagram());
         break;
       case 'print':
         let options = { region: 'Content', mode: 'Data', multiplePage: true, margin: { left: 0, top: 0, bottom: 0, right: 0 } };
@@ -547,6 +558,7 @@ class App extends React.Component {
         diagram.dataBind();
         break;
       case 'export':
+        document.getElementById("exportfileName").value=document.getElementById('diagramName').innerHTML;
         exportDialog.show();
         break;
       case 'landscape':
@@ -627,13 +639,21 @@ class App extends React.Component {
     document.getElementById('diagramName').innerHTML = document.getElementById('diagramEditable').value;
     document.getElementsByClassName('db-diagram-name-container')[0].classList.remove('db-edit-name');
   }
-  // Triggers when the JSON file is uploaded successfully. 
+  // Triggers when the JSON file is uploaded successfully.
   onUploadSuccess(args) {
     var file1 = args.file;
     var file = file1.rawFile;
     var reader = new FileReader();
+    reader.onloadend = (e) => {
+      loadDiagram(e);
+      var fileName = file1.name || '';
+      var baseName = fileName.lastIndexOf('.') > -1 ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
+      var nameEl = document.getElementById('diagramName');
+      if (nameEl) { nameEl.innerHTML = baseName; }
+    };
     reader.readAsText(file);
-    reader.onloadend = loadDiagram;
+    defaultuploadInstance.clearAll();
+
   }
   // Triggers when the image is uploaded successfully.
   onPictureUploadSuccess(args) {
@@ -648,9 +668,7 @@ class App extends React.Component {
   onUploadFailure(args) {
     document.getElementsByClassName('sb-content-overlay')[0].style.display = 'none';
   }
-  onUploadFileSelected(args) {
-    document.getElementsByClassName('sb-content-overlay')[0].style.display = '';
-  }
+
   fontFamilyChange = () => {
     return (
       <DropDownListComponent id="fontfamily" popupWidth={160} width={'100%'} fields={fields} placeholder={'select a font type'} index={0} dataSource={fontType} change={(args) => {
@@ -663,7 +681,7 @@ class App extends React.Component {
   }
   fontSizeChange = () => {
     return (
-      <div className="col-xs-4 column-style">
+      <div style={{marginLeft : '5px'}}>
         <DropDownListComponent dataSource={fontSizeList} id="fontSize" index={4} width={'60px'} change={(args) => {
           UtilityMethods.prototype.fontStyleChange(args);
         }} />
@@ -672,7 +690,7 @@ class App extends React.Component {
 
   fontColorChange = () => {
     return (
-      <ColorPickerComponent id='inline-palette' className='color-font' value='#000000' modeSwitcher={true} mode='Palette' iconCss='sf-icon-text tb-icons' change={(args) => {
+      <ColorPickerComponent id='inline-palette' className='color-font' value='#000000' modeSwitcher={true} mode='Palette' iconcss='sf-icon-text tb-icons' change={(args) => {
         UtilityMethods.prototype.fontColorChange(args)
       }}></ColorPickerComponent>
     );
@@ -699,38 +717,28 @@ class App extends React.Component {
             File Name
           </div>
           <div className="row db-dialog-child-prop-row">
-            <input type="text" id="exportfileName" value="Untitled Diagram" />
+            <input type="text" id="exportfileName" />
           </div>
         </div>
         <div className="row db-dialog-prop-row">
-          <div className="col-xs-6 db-col-left">
             <div className="row">
               Format
             </div>
             <div className="row db-dialog-child-prop-row">
               <DropDownListComponent id="exportFormat" ref={dropdown => this.ddlTextPosition = dropdown} value={"JPG"} dataSource={fileFormats} fields={dropdownListFields} />
             </div>
-          </div>
-          <div className="col-xs-6 db-col-right">
-            <div className="row">
-              Region
-            </div>
-            <div className="row db-dialog-child-prop-row">
-              <DropDownListComponent ref={dropdown => this.ddlTextPosition = dropdown} id="exportRegion" value={"PageSettings"} dataSource={diagramRegions} fields={dropdownListFields} />
-            </div>
-          </div>
         </div>
       </div>
     )
   }
   searchContent = () => {
     return (<div id="searchDialogContent">
-      <div class="row"><div class="row">Search By</div>
-        <div class="row db-dialog-child-prop-row">
+      <div className="row"><div className="row">Search By</div>
+        <div className="row db-dialog-child-prop-row">
           <DropDownListComponent id="searchDropDown" popupWidth={160} width={'100%'} fields={dropdownListFields} index={0} dataSource={searchDropDownItems} />
         </div>
-        <div class="row">Search Value</div>
-        <div class="row db-dialog-child-prop-row">
+        <div className="row">Search Value</div>
+        <div className="row db-dialog-child-prop-row">
           <input type="text" id="searchBox" />
         </div>
       </div>
@@ -801,35 +809,47 @@ class App extends React.Component {
     let phoneNo = document.getElementById('phNumber');
     node.data.Name = name.value;
     var nameText = document.getElementById(node.id + '_text1_text');
-    if (nameText) {
-      nameText.textContent = name.value;
-    }
-    node.data.Designation = designation.value;
-    var desigText = document.getElementById(node.id + '_desig_text');
-    if (desigText) {
-      desigText.textContent = designation.value;
-    }
-    node.data.EmployeeID = employeeID.value;
-    var eidText = document.getElementById(node.id + '_eid_text');
-    if (eidText) {
-      eidText.textContent = employeeID.value;
-    }
-    node.data.Team = team.value;
-    var teamText = document.getElementById(node.id + '_team_text');
-    if (teamText) {
-      teamText.textContent = team.value;
-    }
-    node.data.EmailId = email.value;
-    var emailText = document.getElementById(node.id + '_email_text');
-    if (emailText) {
-      emailText.textContent = email.value;
-    }
-    node.data.PhoneNumber = phoneNo.value;
-    var phoneText = document.getElementById(node.id + '_phone_text');
-    if (phoneText) {
-      phoneText.textContent = phoneNo.value;
-    }
+        if (nameText) {
+            let nameTspanElement = nameText.querySelector("tspan");
+            if (nameTspanElement) nameTspanElement.textContent = truncateText(name.value, 15);
+        }
+        node.data.Designation = designation.value;
+        var desigText = document.getElementById(node.id + '_desig_text');
+        if (desigText) {
+            let designTspanElement = desigText.querySelector("tspan");
+            if (designTspanElement) designTspanElement.textContent = truncateText(designation.value, 15);
+        }
+        node.data.EmployeeID = employeeID.value;
+        var eidText = document.getElementById(node.id + '_eid_text');
+        if (eidText) {
+            let eidTspanElement = eidText.querySelector("tspan");
+            if (eidTspanElement) eidTspanElement.textContent = truncateText(employeeID.value, 10);
+        }
+        node.data.Team = team.value;
+        var teamText = document.getElementById(node.id + '_team_text');
+        if (teamText) {
+            let teamTspanElement = teamText.querySelector("tspan");
+            if (teamTspanElement) teamTspanElement.textContent = truncateText(team.value, 15);
+        }
+        node.data.EmailId = email.value;
+        var emailText = document.getElementById(node.id + '_email_text');
+        if (emailText) {
+            let emailTspanElement = emailText.querySelector("tspan");
+            if (emailTspanElement) emailTspanElement.textContent = truncateText(email.value, 12);
+        }
+        node.data.PhoneNumber = phoneNo.value;
+        var phoneText = document.getElementById(node.id + '_phone_text');
+        if (phoneText) {
+            let phoneTspanElement = phoneText.querySelector("tspan");
+            if (phoneTspanElement) phoneTspanElement.textContent = truncateText(phoneNo.value , 15);
+        }
     node.tooltip.content = getContent(node.data);
+    let data = diagram.dataSourceSettings.dataSource.dataSource.json;
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].Id == node.data.Id) {
+        diagram.dataSourceSettings.dataSource.dataSource.json.splice(i, 1, node.data);
+      }
+    }
     dialogInstance.hide();
   };
   cancel() {
@@ -866,6 +886,44 @@ class App extends React.Component {
       shortCutSpan.setAttribute('class', 'db-shortcut');
     }
   }
+
+  getCommands() {
+    let commands = [
+      {
+        name: 'new',
+        canExecute: function () {
+          return true;
+        },
+        execute: function () {
+          diagramInstance.clear();
+          diagramInstance.dataSourceSettings.dataSource = new DataManager([dataTemp[0]]);
+          diagramInstance.dataBind();
+        },
+        gesture: { key: Keys.N, keyModifiers: KeyModifiers.Shift },
+      },
+      {
+        name: 'open',
+        canExecute: function () {
+          return true;
+        },
+        execute: function () {
+          document.getElementsByClassName('e-file-select-wrap')[0].querySelector('button').click();
+        },
+        gesture: { key: Keys.O, keyModifiers: KeyModifiers.Control },
+      },
+      {
+        name: 'save',
+        canExecute: function () {
+          return true;
+        },
+        execute: function () {
+          download(diagramInstance.saveDiagram());
+        },
+        gesture: { key: Keys.S, keyModifiers: KeyModifiers.Control },
+      },
+    ];
+    return commands;
+  }
   // Diagram initialization.
   render() {
     return (<div className='diagrambuilder-container tailwind'>
@@ -879,12 +937,14 @@ class App extends React.Component {
               Untitled Diagram
             </span>
             <input id='diagramEditable' type="text" className="db-diagram-name" onKeyDown={this.diagramNameKeyDown.bind(this)} onBlur={this.diagramNameChange.bind(this)} />
-            <span id='diagramreport' className="db-diagram-name db-save-text" /> 
+            <span id='diagramreport' className="db-diagram-name db-save-text" />
           </div>
-          <div className='db-menu-container'>
-            <MenuComponent id="btnFileMenu" cssclass={"e-caret-hide"} content="File" items={getFileMenuItems} select={this.menuClick} beforeItemRender={this.beforeItemRender.bind(this)} />
-            <MenuComponent id="btnEditMenu" cssclass={"e-caret-hide"} content="Design" items={getDesignItems} select={this.menuClick} />
-            <MenuComponent id="btnViewMenu" cssclass={"e-caret-hide"} content="View" items={getViewItems} select={this.menuClick} />
+          <div className='db-menu-container' style={{display: 'flex', justifyContent: 'space-between'}}>
+            <div>
+              <MenuComponent id="btnFileMenu" cssclass={"e-caret-hide"} content="File" items={getFileMenuItems} select={this.menuClick} beforeItemRender={this.beforeItemRender.bind(this)} />
+              <MenuComponent id="btnViewMenu" cssclass={"e-caret-hide"} content="View" items={getViewItems} select={this.menuClick} />
+            </div>
+            <div className="promotion-text"><img style={{marginRight:'7px', filter: 'brightness(0) invert(1)'}} src="./assets/images/svg/Syncfusion_Logo.svg" />Powered by&nbsp;<a style={{textDecoration: 'none', color:'#fff30f'}} href="https://www.syncfusion.com/react-components/react-diagram?tag=es-freetools-organizational-chart-sample-ft" target="_blank">Syncfusion Diagram Component</a></div>
           </div>
         </div>
         <div className='db-toolbar-editor'>
@@ -893,34 +953,34 @@ class App extends React.Component {
             <ItemsDirective>
               <ItemDirective prefixIcon="sf-icon-save tb-icons" tooltipText="Save Diagram" cssClass="tb-item-start tb-item-save" />
               <ItemDirective prefixIcon="sf-icon-open tb-icons" tooltipText="Open Diagram" cssClass="tb-item-middle tb-item-open" />
-              <ItemDirective prefixIcon="sf-icon-print tb-icons" tooltipText="Print Diagram" cssClass="tb-item-middle tb-item-print" />
-              <ItemDirective prefixIcon="sf-icon-export tb-icons" tooltipText="Export Diagram" cssClass="tb-item-end tb-item-export" />
               <ItemDirective type="Separator" />
-              <ItemDirective prefixIcon="sf-icon-undo tb-icons" tooltipText="Undo" cssClass="tb-item-start tb-item-undo" />
-              <ItemDirective prefixIcon="sf-icon-redo tb-icons" tooltipText="Redo" cssClass="tb-item-end tb-item-redo" />
               <ItemDirective type="Separator" />
-              <ItemDirective tooltipText="Font Family" template={this.fontFamilyChange} cssClass="tb-item-start item-singleSelect" />
-              <ItemDirective tooltipText="Font Size" align="Left" template={this.fontSizeChange} cssClass="tb-item-start item-singleSelect" />
-              <ItemDirective type="Separator" />
-              <ItemDirective prefixIcon="sf-icon-bold tb-icons" tooltipText="Bold" cssClass="tb-item-start item-singleSelect" />
-              <ItemDirective prefixIcon="sf-icon-italic tb-icons" tooltipText="Italic" cssClass="tb-item-middle item-singleSelect" />
-              <ItemDirective prefixIcon="sf-icon-underline tb-icons" tooltipText="Underline" cssClass="tb-item-end item-singleSelect" />
-              <ItemDirective type="Separator" />
-              <ItemDirective prefixIcon="sf-icon-text tb-icons" tooltipText="Font Color" template={this.fontColorChange} cssClass="tb-item-start item-singleSelect" />
-              <ItemDirective prefixIcon="sf-icon-fil_colour tb-icons" tooltipText="Fill Color" template={this.fillColorChange} cssClass="tb-item-start item-singleSelect" />
-              <ItemDirective prefixIcon="sf-icon-stroke tb-icons" tooltipText="Stroke Color" template={this.strokeColorChange} cssClass="tb-item-end item-singleSelect" />
-              <ItemDirective type="Separator" />
+              <ItemDirective tooltipText="Font Family" template={this.fontFamilyChange} cssClass="tb-item-start item-singleSelect e-overlay"/>
+              <ItemDirective tooltipText="Font Size" align="Left" template={this.fontSizeChange} cssClass="tb-item-start item-singleSelect e-overlay"/>
+              <ItemDirective type="Separator"/>
+              <ItemDirective prefixIcon="sf-icon-bold tb-icons" tooltipText="Bold" cssClass="tb-item-start item-singleSelect e-overlay" />
+              <ItemDirective prefixIcon="sf-icon-italic tb-icons" tooltipText="Italic" cssClass="tb-item-middle item-singleSelect e-overlay"/>
+              <ItemDirective prefixIcon="sf-icon-underline tb-icons" tooltipText="Underline" cssClass="tb-item-end item-singleSelect e-overlay"/>
+              <ItemDirective type="Separator"/>
+              <ItemDirective prefixIcon="sf-icon-text tb-icons" tooltipText="Font Color" template={this.fontColorChange} cssClass="tb-item-start item-singleSelect e-overlay"/>
+              <ItemDirective prefixIcon="sf-icon-fil_colour tb-icons" tooltipText="Fill Color" template={this.fillColorChange} cssClass="tb-item-start item-singleSelect e-overlay"/>
+              <ItemDirective prefixIcon="sf-icon-stroke tb-icons" tooltipText="Stroke Color" template={this.strokeColorChange} cssClass="tb-item-end item-singleSelect e-overlay"/>
+              <ItemDirective type="Separator"/>
               <ItemDirective prefixIcon="sf-icon-pointer" tooltipText="Select Tool" cssClass="tb-item-start tb-item-selected" />
               <ItemDirective prefixIcon="sf-icon-pan" tooltipText="Pan Tool" cssClass="tb-item-middle" />
-              <ItemDirective prefixIcon="db-overview" tooltipText="Overview" cssClass="tb-item-end db-overview" />
             </ItemsDirective>
           </ToolbarComponent>
         </div>
         </div>
       </div>
       <div className='row content'>
-        <div style={{ float: 'left', width: '70%' }}>
-          <DiagramComponent id="diagram" ref={diagram => (diagramInstance = diagram)} width={"106%"} height={"750px"} rulerSettings={{ showRulers: true }} snapSettings={{ constraints: SnapConstraints.None }}
+        <div className='main-content'>
+        <div className='db-diagram-container'>
+          <DiagramComponent id="diagram" ref={diagram => (diagramInstance = diagram)} width={"100%"} height={"100%"} rulerSettings={{ showRulers: true }}
+            snapSettings={{
+              constraints: SnapConstraints.All
+                & ~(SnapConstraints.ShowLines | SnapConstraints.SnapToLines),
+            }}
             dataSourceSettings={{
               id: "Id",
               parentId: "ReportingPerson",
@@ -937,8 +997,10 @@ class App extends React.Component {
               constraints: SelectorConstraints.All,
               userHandles: handle,
             }}
+            commandManager={{commands:this.getCommands()}}
             getNodeDefaults={(obj) => {
               obj.height = 50;
+              obj.width = 150;
               obj.addInfo = { fill: 'white' };
               obj.constraints = NodeConstraints.Default & ~NodeConstraints.Rotate | NodeConstraints.Tooltip;
               obj.tooltip = { content: getContent(obj.data), position: 'BottomRight', relativeMode: 'Object' };
@@ -949,7 +1011,7 @@ class App extends React.Component {
                 iconColor: 'white',
                 cornerRadius: 10,
                 borderColor: 'black',
-                shape: 'None',
+                shape: expandIcon.expandIconShape,
                 fill: 'black',
                 offset: { x: 0.5, y: 1.2 },
                 pathData: 'M16.261993,32L16.359985,31.934998 16.454987,32 16.48999,31.846008 32,20.705013 32,12.254999 16.359985,23.539014 0,12.254999 0,20.705013 15.77301,31.846008z'
@@ -960,7 +1022,7 @@ class App extends React.Component {
                 iconColor: 'white',
                 cornerRadius: 10,
                 borderColor: 'black',
-                shape: 'None',
+                shape: expandIcon.collapseIconShape,
                 fill: 'black',
                 offset: { x: 0.5, y: 1.2 },
                 pathData: 'M16.261993,0L16.359985,0.065002445 16.454987,0 16.48999,0.15399169 32,11.294986 32,19.745 16.359985,8.5149861 0,19.745 0,11.294986 16.22699,0.15399169z'
@@ -978,11 +1040,7 @@ class App extends React.Component {
               return this.getNodeTemplate(node);
             }}
             scrollSettings={{
-              minZoom: 0.3, maxZoom: 3.2
-            }}
-            pageSettings={{
-              background: { color: '#FFFFFF' }, margin: { left: 5, top: 5 },
-              orientation: 'Landscape', showPageBreaks: false, multiplePage: false
+              minZoom: 0.3, maxZoom: 3.2, padding: {left: 100, right: 100, top: 100, bottom: 100}
             }}
             selectionChange={(args) => {
               DiagramClientSideEvents.prototype.selectionChange(args);
@@ -998,16 +1056,18 @@ class App extends React.Component {
             }}
             created={() => {
               diagramInstance.fitToPage({ mode: 'Page', region: 'Content' });
-              document.getElementById('zoomSliderText').value = Math.round(diagramInstance.scrollSettings.currentZoom * 100) + '%';
+              document.getElementById('zoomSliderText').value = 70 + '%';
+              sliderInstance.value = 70;
             }}
           >
             <Inject services={[
               DataBinding,
               HierarchicalTree,
+              Snapping,
             ]} />
           </DiagramComponent>
         </div>
-        <div className='db-property-editor-container' id="propertyPanel" style={{ float: 'right', padding: '10px', width: '25%', overflow: 'auto' }}>
+        <div className='db-property-editor-container' style={{paddingLeft:'20px'}}>
           <div id="generalDiagramContainer" className="db-general-diagram-prop-container">
             <div id='diagramPropertyContainer' className="db-diagram-prop-container">
               <div className="row db-prop-header-text" id='properties'>
@@ -1020,7 +1080,7 @@ class App extends React.Component {
                   </div>
                   <div id="pattern">
                     <div className="row" style={{ paddingTop: '8px' }}>
-                      <div className="image-pattern-style" id="pattern1" onClick={subtreeClick.bind(this)} style={{ backgroundImage: 'url(https://ej2.syncfusion.com/javascript/demos/src/diagram/patternimages/Pattern_1.png)', marginRight: '3px' }}>
+                      <div className="image-pattern-style" id="pattern1" onClick={subtreeClick.bind(this)} style={{ backgroundImage: 'url(https://ej2.syncfusion.com/javascript/demos/src/diagram/patternimages/Pattern_1.png)', margin: '0px 3px' }}>
                       </div>
                       <div className="image-pattern-style" id="pattern2" onClick={subtreeClick.bind(this)} style={{ backgroundImage: 'url(https://ej2.syncfusion.com/javascript/demos/src/diagram/patternimages/Pattern_2.png)', margin: '0px 3px' }}>
                       </div>
@@ -1052,80 +1112,80 @@ class App extends React.Component {
                       <div className="image-pattern-style2" onClick={orientateClick.bind(this)} id="LeftToRight" style={{ backgroundImage: 'url(https://ej2.syncfusion.com/javascript/demos/src/diagram/Images/common-orientation/lefttoright.png)', margin: '0px 3px' }}>
                       </div>
                       <div className="row" style={{ paddingTop: '8px' }}>
-                        <div className="image-pattern-style2" onClick={orientateClick.bind(this)} id="RightToLeft" style={{ backgroundImage: 'url(https://ej2.syncfusion.com/javascript/demos/src/diagram/Images/common-orientation/righttoleft.png)', margin: '0px 3px' }}>
+                        <div className="image-pattern-style2" onClick={orientateClick.bind(this)} id="RightToLeft" style={{ backgroundImage: 'url(https://ej2.syncfusion.com/javascript/demos/src/diagram/Images/common-orientation/righttoleft.png)', margin: '6px 1px' }}>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="row db-prop-row" style={{ marginLeft: '15px', paddingTop: '10px' }}>
-                  <button id="reLayoutBtn" onClick={this.reLayoutBtn} className="e-control e-btn e-primary" cssclass='e-flat e-db-primary' data-ripple="true" style={{ fontSize: '10px' }}>Re-Layout</button>
+                <div className="row db-prop-row" style={{ marginLeft: '4px', paddingTop: '10px' }}>
                   <ButtonComponent id="addAssistantBtn" onClick={this.addAssistantBtn} iconCss="sf-icon-add-child" className="e-control e-btn e-primary" cssclass='e-flat e-db-primary' data-ripple="true" style={{ fontSize: '10px' }}>Add-Assistant</ButtonComponent>
+                  <button id="reLayoutBtn" onClick={this.reLayoutBtn} className="e-control e-btn e-primary" cssclass='e-flat e-db-primary' data-ripple="true" style={{ fontSize: '10px', marginLeft: '20px', width: '137px' }}>Re-Layout</button>
                 </div>
                 <div className="row property-panel-content" style={{ paddingTop: "10px" }}>
                   <div className="row row-header">Behavior</div>
-                  <div className="row" style={{ paddingTop: '8px', paddingBottom: '10px' }}>
-                    <div style={{ display: "table", height: "5px" }} className="col-xs-6">
-                      <div style={{ display: "table-cell", fontSize: '10px', verticalAlign: "middle", marginRight: '10px' }}>
+                  <div className="row" style={{ paddingTop: "8px" }}>
+                    <div style={{ display: "table", height: "35px" }} className="col-xs-6">
+                      <div style={{ display: "table-cell", fontSize: '11px', verticalAlign: "middle" }}>
                         Horizontal Spacing
                       </div>
-                      <div className="col-xs-4 db-col-right" style={{ marginLeft: '6px' }}>
-                        <div className="db-text-container" style={{ width: '77px', marginLeft: '20px' }}>
-                          <div className="db-text-input">
-                            <NumericTextBoxComponent ref={hSpacingRef => (hSpacing = hSpacingRef)} format="##.##" width={'77px'} id="hSpacing" style={{ width: "100%" }} min={20} max={60} step={2} value={30} change={() => {
-                              diagramInstance.layout.horizontalSpacing = Number(hSpacing.value);
-                              diagramInstance.dataBind();
-                            }} />
-                          </div>
-                        </div>
-                      </div>
                     </div>
-                    <br></br>
-                    <br></br>
-                    <div style={{ display: "table", height: "5px" }} className="col-xs-6">
-                      <div style={{ display: "table-cell", fontSize: '10px', verticalAlign: "middle" }}>
+                    <div className="col-xs-6">
+                      <div className="db-text-container" style={{ width: '77px', marginLeft: '20%' }}>
+                          <div className="db-text-input">
+                      <NumericTextBoxComponent ref={hSpacingRef => (hSpacing = hSpacingRef)} format="##.##" width={'77px'} id="hSpacing" style={{ width: "100%" }} min={20} max={200} step={2} value={30} change={() => {
+                        diagramInstance.layout.horizontalSpacing = Number(hSpacing.value);
+                        diagramInstance.dataBind();
+                      }} />
+                    </div>
+                    </div>
+                    </div>
+                  </div>
+                  <div className="row" style={{ paddingTop: "8px" }}>
+                    <div style={{ display: "table", height: "35px" }} className="col-xs-6">
+                      <div style={{ display: "table-cell",fontSize: '11px', verticalAlign: "middle" }}>
                         Vertical Spacing
                       </div>
-                      <div className="col-xs-4 db-col-right" style={{ marginLeft: "6px" }}>
-                        <div className="db-text-container" style={{ width: "77px", marginLeft: "20px" }}>
+                    </div>
+                    <div className="col-xs-6">
+                      <div className="db-text-container" style={{ width: "77px", marginLeft: "20%" }}>
                           <div className="db-text-input">
-                            <NumericTextBoxComponent ref={vSpacingRef => (vSpacing = vSpacingRef)} format="n" width={'77px'} d="vSpacing" style={{ width: "100%" }} min={30} max={100} step={1} value={30} change={() => {
-                              diagramInstance.layout.verticalSpacing = Number(vSpacing.value);
-                              diagramInstance.dataBind();
-                            }} />
-                          </div>
-                        </div>
+                      <NumericTextBoxComponent ref={vSpacingRef => (vSpacing = vSpacingRef)} format="n" width={'77px'} d="vSpacing" style={{ width: "100%" }} min={20} max={200} step={1} value={30} change={() => {
+                        diagramInstance.layout.verticalSpacing = Number(vSpacing.value);
+                        diagramInstance.dataBind();
+                      }} />
+                      </div>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="row db-prop-row" style={{ borderTop: '1px solid #CBCBCB', paddingTop: '10px', paddingBottom: '10px' }}>
-                  <div className="col-xs-4 db-col-left" style={{ width: '160px', marginLeft: '5px' }}>
-                    <DropDownButtonComponent id="pictureDropdown" iconCss='sf-icon-insert_image' content="Picture" width={'100px'} items={this.pictureItems()} select={insertOrRemovePicture} />
+                  <div className="col-xs-6 db-col-left" style={{ width: '140px', marginLeft: '4px'}}>
+                    <DropDownButtonComponent id="pictureDropdown" iconCss='sf-icon-insert_image' content="Picture" style={{width:'131px'}} items={this.pictureItems()} select={insertOrRemovePicture} />
                   </div>
-                  <div className="col-xs-6 db-col-right" style={{ width: '160px' }}>
-                    <DropDownButtonComponent id="shapeTemplatesDropDown" iconCss='e-icons e-properties-2' content="Templates" width={'100px'} items={this.shapeTemplatesItems()} select={modifyNodeTemplate} />
+                  <div className="col-xs-6 db-col-right" style={{ width: '160px', paddingLeft: '10px' }}>
+                    <DropDownButtonComponent id="shapeTemplatesDropDown" iconCss='e-icons e-properties-2' content="Templates" style={{width:'140px'}} items={this.shapeTemplatesItems()} select={modifyNodeTemplate} />
                   </div>
                 </div>
                 <div className="row db-prop-row" style={{ borderTop: '1px solid #CBCBCB', paddingTop: '10px', paddingBottom: '10px' }}>
-                  <div className="col-xs-6 db-col-left" style={{ marginLeft: '5px' }}>
-                    <MultiSelectComponent id="multiCheckbox" dataSource={this.fieldsListItems()} fields={{ text: 'Name', value: 'Code' }} placeholder="Fields" value={['Name', 'Desig']} mode="CheckBox" filterBarPlaceholder="Search data" popupHeight="350px" change={modifyNodeTemplate}>
+                  <div className="col-xs-6 db-col-left" style={{ marginLeft: '5px', width: '133px' }}>
+                    <MultiSelectComponent id="multiCheckbox" dataSource={this.fieldsListItems()} fields={{ text: 'Name', value: 'Code' }} showSelectAll = 'true' placeholder="Fields" value={['Name', 'Desig']} mode="CheckBox" filterBarPlaceholder="Search data" popupHeight="350px" change={modifyNodeTemplate}>
                       <Inject services={[CheckBoxSelection]} />
                     </MultiSelectComponent>
                   </div>
-                  <div className="col-xs-4 db-col-right" style={{ marginLeft: '10px' }}>
-                    <ButtonComponent cssclass='db-search-btn' iconCss='e-icons e-search' isPrimary onClick={this.searchExport}>Search</ButtonComponent>
+                  <div className="col-xs-4 db-col-right" style={{ marginLeft: '15px' }}>
+                    <ButtonComponent cssclass='db-search-btn' iconCss='e-icons e-search' isPrimary onClick={this.searchExport} style={{width:'140px'}}>Search</ButtonComponent>
                   </div>
                 </div>
                 <div className="row db-prop-row" style={{ borderTop: '1px solid #CBCBCB', paddingTop: '10px' }}>
-                  <CheckBoxComponent checked={false} label="Expandable" change={onChange.bind(this)}></CheckBoxComponent>
+                  <CheckBoxComponent checked={false} id="expandable" label="Expandable" change={onChange.bind(this)}></CheckBoxComponent>
                 </div>
                 <div className="row db-prop-row">
                   <div className="col-xs-2 db-col-right db-prop-text-style" style={{ paddingTop: '6px', marginLeft: '10px' }}>
                     <span className="db-prop-text-style">Zoom</span>
                   </div>
                   <div className="col-xs-6 db-col-left" style={{ paddingRight: '10px' }}>
-                    <SliderComponent id='zoomSlider' value={'diagramInstance.scrollSettings.currentZoom * 100'} max={'300'} min={'30'} type='MinRange' change={(args) => {
+                    <SliderComponent id='zoomSlider' ref={slider => (sliderInstance = slider)} max={'300'} min={'30'} type='MinRange' change={(args) => {
                       UtilityMethods.prototype.zoomChange(args);
                     }} />
                   </div>
@@ -1135,14 +1195,15 @@ class App extends React.Component {
                 </div>
                 <div className="col-lg-4" id="overview-container" style={{ zIndex: '-1', width: '25%', padding: '0px', right: '30px', bottom: '20px', border: '#eeeeee', borderStyle: 'solid', boxShadow: '0px 2px 2px rgba(0,0,0,0.3)', background: '#f7f7f7' }}>
                   <button className="overview-toggle-btn" id="toggleOverviewButton" onClick={this.toggleOverviewButton}>&#215;</button>
-                  <OverviewComponent id="overview" style={{ top: "30px", left: "20px" }} sourceID="diagram" />
+                  <OverviewComponent id="overview" ref={overview => (overviewInstance = overview)} style={{ top: "30px", left: "20px" }} sourceID="diagram" />
                 </div>
               </div>
             </div>
           </div>
         </div>
+        <Footer />
         <div className='uploadDefault'>
-          <UploaderComponent ref={defaultupload => this.defaultupload = defaultupload} id='defaultfileupload' asyncSettings={this.path} success={this.onUploadSuccess} failure={this.onUploadFailure} progress={this.onUploadFileSelected} />
+          <UploaderComponent ref={defaultupload => defaultuploadInstance = defaultupload} id='defaultfileupload' asyncSettings={this.path} success={this.onUploadSuccess} failure={this.onUploadFailure}  />
         </div>
         <div className='pictureUpload'>
           <UploaderComponent ref={pictureUpload => this.pictureUpload = pictureUpload} showFileList={false} id='pictureUpload' asyncSettings={this.path} success={this.onPictureUploadSuccess} />
@@ -1152,13 +1213,14 @@ class App extends React.Component {
           </DialogComponent>
         </div>
         <div className='exportDialog'>
-          <DialogComponent id="exportDialog" target={this.dglTarget} showCloseIcon={true} isModal={true} animationSettings={this.dialogAnimationSettings} width="400px" content={this.exportContent} buttons={UtilityMethods.prototype.getDialogButtons('export')} header="Export Diagram" visible={false}>
+          <DialogComponent id="exportDialog" target={this.dglTarget} showCloseIcon={true} isModal={true} animationSettings={this.dialogAnimationSettings} width="400px" content={this.exportContent}  buttons={UtilityMethods.prototype.getDialogButtons('export')} header="Export Diagram" visible={false}>
           </DialogComponent>
         </div>
         <div className='searchDialog'>
-          <DialogComponent id="searchDialog" target={this.dglTarget} showCloseIcon={true} isModal={true} animationSettings={this.dialogAnimationSettings} width="400px" content={this.searchContent} buttons={UtilityMethods.prototype.getDialogButtons('search')} header="Search Nodes" visible={false}>
+          <DialogComponent id="searchDialog" target={this.dglTarget} showCloseIcon={true} isModal={true} animationSettings={this.dialogAnimationSettings} width="370px" height ="300px" position={{ X: 'right', Y: 'center' }} content={this.searchContent} buttons={UtilityMethods.prototype.getDialogButtons('search')} header="Search Nodes" visible={false}>
           </DialogComponent>
         </div>
+      </div>
       </div>
     </div>
     );
@@ -1291,4 +1353,40 @@ function getContent(obj) {
       </div>`;
   return tooltipContent;
 }
+
+const Footer = () => (
+  <div className="footer">
+    <div className="footer-container">
+      <div className="diagram-icon">
+        <img
+          className="footer-logo"
+          src="./assets/images/svg/Diagram_Component.svg"
+        />
+      </div>
+      <div className="footer-content">
+        <div className="title">
+          <span>
+            Want interactive diagramming in your app?
+          </span>
+          <span><strong className='main-title'> Try our Diagram Component</strong> — build, connect, and customize!</span>
+        </div>
+        <div className="buttons">
+          <button
+            type="button"
+            className="e-trial-btn e-btn e-primary e-icons"
+            onClick={() => window.open('https://www.syncfusion.com/downloads/react?tag=es-freetools-organizational-chart-sample-ads-trial', '_blank')}
+          >
+          </button>
+          <button
+            type="button"
+            className="e-demo-btn e-btn"
+            onClick={() => window.open('https://www.syncfusion.com/request-demo?tag=es-freetools-organizational-chart-sample-ads-demo', '_blank')}
+          >
+            Request Demo
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+);
 export default App;
