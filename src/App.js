@@ -3,7 +3,7 @@ import * as React from "react";
 import { DiagramComponent, OverviewComponent, SelectorConstraints, PrintAndExport, NodeConstraints, SnapConstraints, ConnectorConstraints, StackPanel, TextElement, PathElement, ImageElement, HierarchicalTree, DataBinding, Inject, Diagram, Snapping, Keys, KeyModifiers } from "@syncfusion/ej2-react-diagrams";
 import { DataManager } from "@syncfusion/ej2-data";
 import { DiagramClientSideEvents } from "./script/events";
-import { UtilityMethods } from "./script/utilityMethods";
+import { UtilityMethods, getPictureTargetNode, clearPictureTargetNode } from './script/utilityMethods';
 import { DropDownButtonComponent } from "@syncfusion/ej2-react-splitbuttons";
 import { DialogComponent } from "@syncfusion/ej2-react-popups";
 import { DropDownListComponent, MultiSelectComponent, CheckBoxSelection } from '@syncfusion/ej2-react-dropdowns';
@@ -372,14 +372,44 @@ function paperList1() {
   return paperList1;
 }
 // To apply the image's base64 value to the imageUrl of node data.
+// To apply the image's base64 value to the selected node.
 function applyBase64AsImageUrl(base64String) {
-  var diagram = document.getElementById("diagram").ej2_instances[0];
-  let selectedNode = diagram.selectedItems.nodes[0];
+  const diagram = document.getElementById('diagram').ej2_instances[0];
+  const selectedNode = getPictureTargetNode(diagram);
+
+  if (!selectedNode) {
+    clearPictureTargetNode();
+    return;
+  }
+
   selectedNode.data.ImageUrl = base64String;
-  diagram.dataSourceSettings.dataSource.dataSource.json.find(x => x.Id == selectedNode.data.Id).ImageUrl = base64String;
-  var imageTag = document.getElementById(selectedNode.id + '_picimage');
-  imageTag.href.baseVal = base64String;
-   UtilityMethods.prototype.addImageToWrapper(selectedNode,undefined,base64String);
+
+  const dataSource =
+    diagram.dataSourceSettings &&
+    diagram.dataSourceSettings.dataSource &&
+    diagram.dataSourceSettings.dataSource.dataSource &&
+    diagram.dataSourceSettings.dataSource.dataSource.json;
+
+  if (Array.isArray(dataSource)) {
+    const nodeData = dataSource.find(
+      (item) => item.Id === selectedNode.data.Id
+    );
+
+    if (nodeData) {
+      nodeData.ImageUrl = base64String;
+    }
+  }
+
+  UtilityMethods.prototype.addImageToWrapper(
+    selectedNode,
+    undefined,
+    base64String
+  );
+
+  diagram.dataBind();
+  diagram.refreshDiagramLayer();
+
+  clearPictureTargetNode();
 }
 export const expandIcon = {
     expandIconShape: 'None',
@@ -409,10 +439,13 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     menuClick = this.menuClick.bind(this);
-    uploadChange = this.onUploadSuccess.bind(this);
+    uploadChange = this.onDiagramFileSelected.bind(this);
+    this.onDiagramFileSelected =
+      this.onDiagramFileSelected.bind(this);
     tooledit = UtilityMethods.prototype.toolbarClick.bind(this);
     insertOrRemovePicture = UtilityMethods.prototype.insertOrRemovePicture.bind(this);
     modifyNodeTemplate = UtilityMethods.prototype.modifyNodeTemplate.bind(this);
+    this.onPictureSelected = this.onPictureSelected.bind(this);
     this.dialogAnimationSettings = { effect: 'None' };
     this.dglTarget = document.body;
     this.path = {
@@ -535,9 +568,26 @@ class App extends React.Component {
         diagram.dataSourceSettings.dataSource = new DataManager([dataTemp[0]]);
         diagram.dataBind();
         break;
-      case 'open':
-        document.getElementsByClassName('e-file-select-wrap')[0].querySelector('button').click();
-        break;
+      case 'open': {
+    const uploaderInput =
+        document.getElementById('defaultfileupload');
+
+    const uploaderWrapper = uploaderInput
+        ? uploaderInput.closest('.e-upload')
+        : null;
+
+    const browseButton = uploaderWrapper
+        ? uploaderWrapper.querySelector(
+            '.e-file-select-wrap button'
+        )
+        : null;
+
+    if (browseButton) {
+        browseButton.click();
+    }
+
+    break;
+}
       case 'save':
         download(diagram.saveDiagram());
         break;
@@ -640,33 +690,152 @@ class App extends React.Component {
     document.getElementsByClassName('db-diagram-name-container')[0].classList.remove('db-edit-name');
   }
   // Triggers when the JSON file is uploaded successfully.
-  onUploadSuccess(args) {
-    var file1 = args.file;
-    var file = file1.rawFile;
-    var reader = new FileReader();
-    reader.onloadend = (e) => {
-      loadDiagram(e);
-      var fileName = file1.name || '';
-      var baseName = fileName.lastIndexOf('.') > -1 ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
-      var nameEl = document.getElementById('diagramName');
-      if (nameEl) { nameEl.innerHTML = baseName; }
-    };
-    reader.readAsText(file);
-    defaultuploadInstance.clearAll();
+  // Reads and loads the selected Diagram JSON file locally.
+  onDiagramFileSelected(args) {
+    const fileInfo =
+      args.filesData && args.filesData.length
+        ? args.filesData[0]
+        : null;
 
+    const file = fileInfo ? fileInfo.rawFile : null;
+
+    // Prevent the Uploader from posting the JSON file to the server.
+    args.cancel = true;
+
+    if (!file) {
+      return;
+    }
+
+    const extension = file.name
+      .split('.')
+      .pop()
+      .toLowerCase();
+
+    if (extension !== 'json') {
+      if (defaultuploadInstance) {
+        defaultuploadInstance.clearAll();
+      }
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      const diagramElement =
+        document.getElementById('diagram');
+
+      const diagram =
+        diagramElement &&
+        diagramElement.ej2_instances &&
+        diagramElement.ej2_instances[0];
+
+      if (!diagram) {
+        return;
+      }
+
+      try {
+        const jsonContent = event.target.result;
+
+        // Validate the selected file before loading it.
+        JSON.parse(jsonContent);
+
+        diagram.clearSelection();
+        clearPictureTargetNode();
+
+        diagram.loadDiagram(jsonContent);
+
+        diagram.doLayout();
+        diagram.fitToPage({
+          mode: 'Page',
+          region: 'Content',
+          canZoomOut: true
+        });
+
+        const fileName = fileInfo.name || file.name || '';
+        const dotIndex = fileName.lastIndexOf('.');
+        const baseName =
+          dotIndex > -1
+            ? fileName.substring(0, dotIndex)
+            : fileName;
+
+        const nameElement =
+          document.getElementById('diagramName');
+
+        if (nameElement) {
+          nameElement.textContent =
+            baseName || 'Untitled Diagram';
+        }
+      } catch (error) {
+        console.error(
+          'Unable to load the Diagram JSON file:',
+          error
+        );
+      } finally {
+        if (defaultuploadInstance) {
+          defaultuploadInstance.clearAll();
+        }
+      }
+    };
+
+    reader.onerror = () => {
+      console.error('Unable to read the selected JSON file.');
+
+      if (defaultuploadInstance) {
+        defaultuploadInstance.clearAll();
+      }
+    };
+
+    reader.readAsText(file);
   }
   // Triggers when the image is uploaded successfully.
-  onPictureUploadSuccess(args) {
-    const file = args.file;
+  // Reads the selected local image and applies it to the target node.
+  onPictureSelected(args) {
+    const fileInfo =
+      args.filesData && args.filesData.length
+        ? args.filesData[0]
+        : null;
+
+    const file = fileInfo ? fileInfo.rawFile : null;
+
+    if (!file) {
+      clearPictureTargetNode();
+      return;
+    }
+
+    if (!file.type || file.type.indexOf('image/') !== 0) {
+      args.cancel = true;
+      clearPictureTargetNode();
+      return;
+    }
+
+    // Prevent EJ2 Uploader from posting the file to a server.
+    args.cancel = true;
+
     const reader = new FileReader();
-    reader.onload = function () {
-      const base64String = reader.result;
-      applyBase64AsImageUrl(base64String);
+
+    reader.onload = () => {
+      applyBase64AsImageUrl(reader.result);
+
+      if (this.pictureUpload) {
+        this.pictureUpload.clearAll();
+      }
     };
-    reader.readAsDataURL(file.rawFile);
+
+    reader.onerror = () => {
+      clearPictureTargetNode();
+    };
+
+    reader.readAsDataURL(file);
   }
   onUploadFailure(args) {
-    document.getElementsByClassName('sb-content-overlay')[0].style.display = 'none';
+    const overlay =
+      document.querySelector('.sb-content-overlay');
+
+    if (overlay) {
+      overlay.style.display = 'none';
+    }
+
+    console.error('File upload failed:', args);
   }
 
   fontFamilyChange = () => {
@@ -907,7 +1076,22 @@ class App extends React.Component {
           return true;
         },
         execute: function () {
-          document.getElementsByClassName('e-file-select-wrap')[0].querySelector('button').click();
+          const uploaderInput =
+            document.getElementById('defaultfileupload');
+
+          const uploaderWrapper = uploaderInput
+            ? uploaderInput.closest('.e-upload')
+            : null;
+
+          const browseButton = uploaderWrapper
+            ? uploaderWrapper.querySelector(
+              '.e-file-select-wrap button'
+            )
+            : null;
+
+          if (browseButton) {
+            browseButton.click();
+          }
         },
         gesture: { key: Keys.O, keyModifiers: KeyModifiers.Control },
       },
@@ -1203,11 +1387,32 @@ class App extends React.Component {
         </div>
         <Footer />
         <div className='uploadDefault'>
-          <UploaderComponent ref={defaultupload => defaultuploadInstance = defaultupload} id='defaultfileupload' asyncSettings={this.path} success={this.onUploadSuccess} failure={this.onUploadFailure}  />
-        </div>
-        <div className='pictureUpload'>
-          <UploaderComponent ref={pictureUpload => this.pictureUpload = pictureUpload} showFileList={false} id='pictureUpload' asyncSettings={this.path} success={this.onPictureUploadSuccess} />
-        </div>
+            <div className="uploadDefault">
+              <UploaderComponent
+                ref={(uploader) => {
+                  defaultuploadInstance = uploader;
+                }}
+                id="defaultfileupload"
+                showFileList={false}
+                autoUpload={false}
+                multiple={false}
+                allowedExtensions=".json"
+                selected={uploadChange}
+              />
+            </div>
+          </div>
+          <div className="pictureUpload">
+            <UploaderComponent
+              ref={(uploader) => {
+                this.pictureUpload = uploader;
+              }}
+              id="pictureUpload"
+              showFileList={false}
+              autoUpload={false}
+              allowedExtensions=".jpg,.jpeg,.png,.gif,.svg,.webp"
+              selected={this.onPictureSelected}
+            />
+          </div>
         <div className='defaultdialog'>
           <DialogComponent id="defaultdialog" target={this.dglTarget} showCloseIcon={true} isModal={true} animationSettings={this.dialogAnimationSettings} width="400px" content={this.content} footerTemplate={this.footerTemplate} header="Properties" visible={false}>
           </DialogComponent>
