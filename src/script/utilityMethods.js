@@ -8,6 +8,8 @@ Diagram.Inject(UndoRedo, PrintAndExport);
 
 export let currentShapeTemplate = 'Image at left';
 export let btnExportClick;
+let selectedPictureNodeId = null;
+
 var showHidePictures = [];
 let matchingNodes = [];
 let currentIndex = 0;
@@ -24,19 +26,59 @@ export class UtilityMethods {
             </div>
         );
     }
-    // To insert or remove or delete the picture of the node.
-    insertOrRemovePicture(args) {
-        let option = args.item.text;
-        switch (option) {
-            case 'Insert':
-            case 'Change':
-                document.getElementsByClassName('pictureUpload')[0].querySelector('button').click();
-                break;
-            case 'Delete':
-            case 'Show/Hide':
-                removePicture(option);
-        }
+    // To insert, change, delete, show, or hide the selected node picture.
+    // To insert, change, delete, show, or hide the selected node picture.
+insertOrRemovePicture(args) {
+    const diagramElement = document.getElementById('diagram');
+    const diagram = diagramElement && diagramElement.ej2_instances
+        ? diagramElement.ej2_instances[0]
+        : null;
+
+    if (!diagram || !args.item) {
+        return;
     }
+
+    const option = args.item.text;
+
+    if (!diagram.selectedItems.nodes.length) {
+        return;
+    }
+
+    const selectedNode = diagram.selectedItems.nodes[0];
+
+    switch (option) {
+        case 'Insert':
+        case 'Change': {
+            // Save the node before opening the native file chooser.
+            selectedPictureNodeId = selectedNode.id;
+
+            const uploaderInput =
+                document.getElementById('pictureUpload');
+
+            const uploaderWrapper = uploaderInput
+                ? uploaderInput.closest('.e-upload')
+                : null;
+
+            const browseButton = uploaderWrapper
+                ? uploaderWrapper.querySelector('.e-file-select-wrap button')
+                : null;
+
+            if (browseButton) {
+                browseButton.click();
+            }
+            break;
+        }
+
+        case 'Delete':
+        case 'Show/Hide':
+            removePicture(option);
+            break;
+
+        default:
+            break;
+    }
+}
+
     // To choose whether to modify the image alignment or employee details.
     modifyNodeTemplate(args) {
         let expanable = document.getElementById('expandable').ej2_instances[0];
@@ -596,22 +638,45 @@ export class UtilityMethods {
             }
         }
     }
-    addImageToWrapper (node, obj, url) {
-        if (node.wrapper && node.wrapper.children && node.wrapper.children[0] && node.wrapper.children[0].children) {
-            // Use obj?.imageUrl for optional chaining, or url as a fallback, or an empty string as the default.
-            const imageUrl = obj?.imageUrl || url || '';
+    addImageToWrapper(node, obj, url) {
+  const imageUrl =
+    (obj && obj.imageUrl) ||
+    url ||
+    (node.data && node.data.ImageUrl) ||
+    '';
 
-            // Iterate over each child and set the source to the determined imageUrl
-            for (let i = 0; i < node.wrapper.children[0].children.length; i++) {
-                let child = node.wrapper.children[0].children[i];
+  if (
+    !node.wrapper ||
+    !node.wrapper.children ||
+    !node.wrapper.children.length
+  ) {
+    return;
+  }
 
-                // Ensure the child actually has a source property before setting it
-                if (child instanceof ImageElement) {
-                    child.source = imageUrl;
-                }
-            }
-        }
+  const updateImageElement = (element) => {
+    if (!element) {
+      return false;
     }
+
+    if (element instanceof ImageElement || element.id === node.id + '_pic') {
+      element.source = imageUrl;
+      element.visible = true;
+      return true;
+    }
+
+    if (element.children && element.children.length) {
+      for (let i = 0; i < element.children.length; i++) {
+        if (updateImageElement(element.children[i])) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  };
+
+  updateImageElement(node.wrapper);
+}
 }
 function getMaxCharsFor(fontPx, baseChars) {
     const baseSize = 12;
@@ -626,9 +691,29 @@ function truncateText(text, maxLength) {
     return text;
 }
 export default UtilityMethods;
+export function getPictureTargetNode(diagram) {
+    let node = null;
+
+    if (selectedPictureNodeId) {
+        node = diagram.getObject(selectedPictureNodeId);
+    }
+
+    if (!node && diagram.selectedItems.nodes.length) {
+        node = diagram.selectedItems.nodes[0];
+    }
+
+    return node;
+}
+
+export function clearPictureTargetNode() {
+  selectedPictureNodeId = null;
+}
+
 // To update the setNodeTemplate method of diagram.
 function updateNodeTemplate(newValue, template) {
     var diagram = document.getElementById("diagram").ej2_instances[0];
+    // A template refresh invalidates the previously stored node wrapper.
+    clearPictureTargetNode();
     diagram.setNodeTemplate = (obj, diagram) => {
         var fieldsList = document.getElementById("multiCheckbox").ej2_instances[0];
         let content = new StackPanel();
@@ -770,51 +855,64 @@ function updateNodeTemplate(newValue, template) {
 
         innerStack.children = childElements;
 
-        if (fieldsList.value.length < 3) {
-            content.width = 160;
-            if (template === 'No image' || template === 'Image at left') {
-                content.height = 80;
-            } else {
-                content.height = 140 + image.height;
-            }
-        }
-        else if (fieldsList.value.length == 3) {
-            content.width = 160;
-            if (template === 'No image' || template === 'Image at left') {
-                content.height = 110;
-            } else {
-                content.height = 110 + image.height;
-            }
-        }
-        else if (fieldsList.value.length == 4) {
-            content.width = 160;
-            if (template === 'No image' || template === 'Image at left') {
-                content.height = 130;
-            } else {
-                content.height = 130 + image.height;
-            }
-        } else if (fieldsList.value.length > 4) {
-            content.width = 160;
-            if (template === 'No image' || template === 'Image at left') {
-                content.height = 180;
-            } else {
-                content.height = 180 + image.height;
-            }
-        } else {
-            content.width = 160;
-            content.height = 100;
-        }
+        const selectedFieldCount = newValue.length;
 
-        if (template === 'No image') {
-            content.children = [innerStack];
-            content.width = content.width - image.width;
-        } else if (template === 'Image at left') {
-            content.children = [image, innerStack];
-        }
-        else {
+        // Approximate height occupied by the rating line and selected text rows.
+        const lineHeight = 10;
+        const textRowHeight = 20;
+        const verticalPadding = 10;
+
+        const textContentHeight =
+            lineHeight +
+            Math.max(selectedFieldCount, 1) * textRowHeight +
+            verticalPadding;
+
+        content.width = 160;
+
+        if (template === 'Image at top') {
             content.orientation = 'Vertical';
-            content.width = content.width - image.width;
+            content.width = 120;
+            content.height = image.height + textContentHeight;
+
+            image.horizontalAlignment = 'Center';
+            innerStack.horizontalAlignment = 'Stretch';
+            innerStack.margin = {
+                left: 5,
+                right: 5,
+                top: 5,
+                bottom: 0
+            };
+
             content.children = [image, innerStack];
+        } else if (template === 'Image at left') {
+            content.orientation = 'Horizontal';
+            content.height = Math.max(image.height, textContentHeight);
+
+            image.verticalAlignment = 'Center';
+            innerStack.horizontalAlignment = 'Left';
+            innerStack.margin = {
+                left: 5,
+                right: 0,
+                top: 0,
+                bottom: 0
+            };
+
+            content.children = [image, innerStack];
+        } else {
+            // No image: height must be based only on the visible text fields.
+            content.orientation = 'Vertical';
+            content.width = 110;
+            content.height = textContentHeight;
+
+            innerStack.horizontalAlignment = 'Stretch';
+            innerStack.margin = {
+                left: 5,
+                right: 5,
+                top: 0,
+                bottom: 0
+            };
+
+            content.children = [innerStack];
         }
         if (fieldsList.value.length === 0) {
             if (template === 'No image') {
@@ -822,13 +920,43 @@ function updateNodeTemplate(newValue, template) {
                 content.height = 50;
             }
         }
+        if (fieldsList.value.length === 0) {
+            if (template === 'No image') {
+                content.width = 100;
+                content.height = 40;
+            }
+        }
         return content;
     };
-    diagram.dataBind();
-    diagram.clear();
-    diagram.refresh();
-    diagram.fitToPage({ canZoomOut: true });
-    updateDiagramViews(diagram);
+// Preserve only IDs. Do not retain old node object references because
+// template refresh recreates each node wrapper.
+const selectedNodeIds = diagram.selectedItems.nodes
+    .filter((node) => node && node.id)
+    .map((node) => node.id);
+
+// Remove the selector before node wrappers are recreated.
+diagram.clearSelection();
+
+diagram.dataBind();
+diagram.refresh();
+
+updateDiagramViews(diagram);
+
+diagram.doLayout();
+diagram.fitToPage({
+    mode: 'Page',
+    region: 'Content',
+    canZoomOut: true
+});
+
+// Select the newly rendered node instances instead of stale references.
+const refreshedNodes = selectedNodeIds
+    .map((id) => diagram.getObject(id))
+    .filter((node) => node && node.wrapper);
+
+if (refreshedNodes.length) {
+    diagram.select(refreshedNodes);
+}
 };
 function updateDiagramViews(diagram){
         // While calling diagram refresh, the overview is removed from the diagram views causing diagram not visible after load or creating new page.
@@ -840,50 +968,99 @@ function updateDiagramViews(diagram){
     }
 // To remove the picture of the node.
 function removePicture(option) {
-    var diagram = document.getElementById("diagram").ej2_instances[0];
-    let node = diagram.selectedItems.nodes[0];
-    let id = diagram.selectedItems.nodes[0].data.Id;
-    let nodeObj = diagram.dataSourceSettings.dataSource.dataSource.json.find((obj) => obj.Id === id);
-    var imageTag = document.getElementById(diagram.selectedItems.nodes[0].id + '_picimage');
-    if (option === 'Delete') {
-        nodeObj.ImageUrl = '';
-        if (imageTag) {
-            imageTag.href.baseVal = '';
-        }
-        removeImageFromWrapper(node);
-    } else {
-        if (nodeObj.ImageUrl !== '') {
-            showHidePictures.push({ id: nodeObj.Id, imageUrl: nodeObj.ImageUrl });
-            nodeObj.ImageUrl = '';
-            if (imageTag) {
-                imageTag.href.baseVal = '';
-            }
-            removeImageFromWrapper(node);
-        } else {
-            let obj = showHidePictures.find((item) => item.id === nodeObj.Id);
-            nodeObj.ImageUrl = obj ? obj.imageUrl : '';
-            if (imageTag) {
-                imageTag.href.baseVal = obj ? obj.imageUrl : '';
-            }
-            UtilityMethods.prototype.addImageToWrapper(node, obj);
-            // Find the index of the object in showHidePictures
-            let index = showHidePictures.findIndex((item) => item.id === nodeObj.Id);
-            // If the object exists in showHidePictures, remove it using splice()
-            if (index !== -1) {
-                showHidePictures.splice(index, 1);
-            }
-        }
+  const diagram = document.getElementById('diagram').ej2_instances[0];
+
+  if (!diagram.selectedItems.nodes.length) {
+    return;
+  }
+
+  const node = diagram.selectedItems.nodes[0];
+  const dataSource =
+    diagram.dataSourceSettings.dataSource.dataSource.json;
+
+  const nodeData = dataSource.find(
+    (item) => item.Id === node.data.Id
+  );
+
+  if (!nodeData) {
+    return;
+  }
+
+  if (option === 'Delete') {
+    nodeData.ImageUrl = '';
+    node.data.ImageUrl = '';
+    removeImageFromWrapper(node);
+  } else if (nodeData.ImageUrl) {
+    const existingIndex = showHidePictures.findIndex(
+      (item) => item.id === nodeData.Id
+    );
+
+    if (existingIndex !== -1) {
+      showHidePictures.splice(existingIndex, 1);
     }
-};
-    function removeImageFromWrapper (node) {
-        if(node.wrapper.children[0].children) {
-            for (let i=0 ; i< node.wrapper.children[0].children.length; i++) {
-                let child = node.wrapper.children[0].children[i];
-                if (child && child instanceof ImageElement) {
-                    child.source = '';
+
+    showHidePictures.push({
+      id: nodeData.Id,
+      imageUrl: nodeData.ImageUrl
+    });
+
+    nodeData.ImageUrl = '';
+    node.data.ImageUrl = '';
+    removeImageFromWrapper(node);
+  } else {
+    const storedPicture = showHidePictures.find(
+      (item) => item.id === nodeData.Id
+    );
+
+    if (storedPicture) {
+      nodeData.ImageUrl = storedPicture.imageUrl;
+      node.data.ImageUrl = storedPicture.imageUrl;
+
+      UtilityMethods.prototype.addImageToWrapper(
+        node,
+        storedPicture
+      );
+
+      const storedIndex = showHidePictures.findIndex(
+        (item) => item.id === nodeData.Id
+      );
+
+      if (storedIndex !== -1) {
+        showHidePictures.splice(storedIndex, 1);
+      }
+    }
+  }
+
+  diagram.dataBind();
+  diagram.refreshDiagramLayer();
+}
+    function removeImageFromWrapper(node) {
+        if (!node || !node.wrapper) {
+            return;
+        }
+
+        const clearImageElement = (element) => {
+            if (!element) {
+                return false;
+            }
+
+            if (element instanceof ImageElement || element.id === node.id + '_pic') {
+                element.source = '';
+                return true;
+            }
+
+            if (element.children && element.children.length) {
+                for (let i = 0; i < element.children.length; i++) {
+                    if (clearImageElement(element.children[i])) {
+                        return true;
+                    }
                 }
             }
-        }
+
+            return false;
+        };
+
+        clearImageElement(node.wrapper);
     }
 
 // To remove toolbar selected item
